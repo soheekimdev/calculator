@@ -6,7 +6,6 @@ const buttons = document.querySelectorAll('.calculator__button');
 
 // 계산기 상태 변수
 let firstOperand = null;
-let secondOperand = null;
 let operator = null;
 let lastResult = null;
 let isNewInput = false;
@@ -17,9 +16,7 @@ let isNewInput = false;
  * @param {number} num - 반올림할 숫자
  * @returns {number} 소수점 이하 10자리까지 반올림된 숫자
  */
-const roundResult = (num) => {
-  return Math.round(num * 1e10) / 1e10;
-};
+const roundResult = (num) => Math.round(num * 1e10) / 1e10;
 
 /**
  * 두 숫자에 대해 지정된 연산을 수행한다.
@@ -29,12 +26,13 @@ const roundResult = (num) => {
  * @returns {string} 계산 결과 또는 에러 메시지
  */
 const calculate = (firstOperand, operator, secondOperand) => {
-  let result;
   const a = parseFloat(firstOperand);
   const b = parseFloat(secondOperand);
+  let result;
+
   switch (operator) {
     case '/':
-      if (b === 0) return 'Error: 0으로 나눌 수 없습니다';
+      if (b === 0) throw new Error('0으로 나눌 수 없습니다');
       result = a / b;
       break;
     case '*':
@@ -49,10 +47,8 @@ const calculate = (firstOperand, operator, secondOperand) => {
     default:
       throw new Error('알 수 없는 연산자');
   }
-  if (!isFinite(result)) return 'Error: 유효하지 않은 결과';
 
-  isNewInput = true;
-  lastResult = roundResult(result);
+  if (!isFinite(result)) throw new Error('유효하지 않은 결과');
   return roundResult(result);
 };
 
@@ -60,8 +56,7 @@ const handleOperator = (buttonEl) => {
   if (lastResult === null) {
     firstOperand = displayInput.value;
   } else if (firstOperand === lastResult) {
-    secondOperand = displayInput.value;
-    displayInput.value = calculate(firstOperand, operator, secondOperand);
+    displayInput.value = calculate(firstOperand, operator, displayInput.value);
     firstOperand = displayInput.value;
     lastResult = displayInput.value;
   } else {
@@ -81,14 +76,16 @@ const handleNumber = (buttonEl) => {
 };
 
 const handlePoint = (buttonEl) => {
-  if (!displayInput.value.includes('.')) {
+  if (isNewInput) {
+    displayInput.value = '0.';
+    isNewInput = false;
+  } else if (!displayInput.value.includes('.')) {
     displayInput.value += buttonEl.textContent;
   }
 };
 
 const clear = () => {
   firstOperand = null;
-  secondOperand = null;
   operator = null;
   lastResult = null;
   displayInput.value = '0';
@@ -100,17 +97,27 @@ const clear = () => {
  */
 const handleButtonClick = (event) => {
   const buttonEl = event.target;
+  const buttonText = buttonEl.textContent;
 
   // 버튼 종류에 따라 적절한 동작 수행
   if (buttonEl.classList.contains('calculator__button--number')) {
     handleNumber(buttonEl);
   } else if (buttonEl.classList.contains('calculator__button--operator')) {
     handleOperator(buttonEl);
-  } else if (buttonEl.textContent === '=') {
-    if (firstOperand) displayInput.value = calculate(firstOperand, operator, displayInput.value);
-  } else if (buttonEl.textContent === '.') {
+
+    console.log(`firstOperand: ${firstOperand}, operator: ${operator}, lastResult: ${lastResult}`);
+  } else if (buttonText === '=') {
+    if (firstOperand) {
+      const result = calculate(firstOperand, operator, displayInput.value);
+      displayInput.value = result;
+      isNewInput = true;
+      lastResult = result;
+
+      console.log(`firstOperand: ${firstOperand}, operator: ${operator}, lastResult: ${lastResult}`);
+    }
+  } else if (buttonText === '.') {
     handlePoint(buttonEl);
-  } else if (buttonEl.textContent === 'C') {
+  } else if (buttonText === 'C') {
     clear();
   }
 };
