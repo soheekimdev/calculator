@@ -18,11 +18,11 @@ button {
 
 /* Custom variables */
 :root {
-  --color-primary: #4b80dc;
+  --color-primary: #2d61bc;
   --color-calculator: #222127;
   --color-button: #3d3645;
   --color-button-hover: #484051;
-  --color-button-active: #2e2835;
+  --color-button-active: var(--color-primary);
   --color-black: #232429;
   --color-white: #fff;
   --color-red: #ef3d5e;

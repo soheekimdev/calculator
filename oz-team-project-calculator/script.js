@@ -8,6 +8,7 @@ const buttons = document.querySelectorAll('.calculator__button');
 let firstOperand = null;
 let secondOperand = null;
 let operator = null;
+let lastResult = null;
 let isNewInput = false;
 
 /**
@@ -31,7 +32,6 @@ const calculate = (firstOperand, operator, secondOperand) => {
   let result;
   const a = parseFloat(firstOperand);
   const b = parseFloat(secondOperand);
-
   switch (operator) {
     case '/':
       if (b === 0) return 'Error: 0으로 나눌 수 없습니다';
@@ -49,14 +49,24 @@ const calculate = (firstOperand, operator, secondOperand) => {
     default:
       throw new Error('알 수 없는 연산자');
   }
-
   if (!isFinite(result)) return 'Error: 유효하지 않은 결과';
 
+  isNewInput = true;
+  lastResult = roundResult(result);
   return roundResult(result);
 };
 
 const handleOperator = (buttonEl) => {
-  firstOperand = displayInput.value;
+  if (lastResult === null) {
+    firstOperand = displayInput.value;
+  } else if (firstOperand === lastResult) {
+    secondOperand = displayInput.value;
+    displayInput.value = calculate(firstOperand, operator, secondOperand);
+    firstOperand = displayInput.value;
+    lastResult = displayInput.value;
+  } else {
+    firstOperand = lastResult;
+  }
   operator = buttonEl.textContent;
   isNewInput = true;
 };
@@ -77,6 +87,10 @@ const handlePoint = (buttonEl) => {
 };
 
 const clear = () => {
+  firstOperand = null;
+  secondOperand = null;
+  operator = null;
+  lastResult = null;
   displayInput.value = '0';
 };
 
@@ -93,7 +107,7 @@ const handleButtonClick = (event) => {
   } else if (buttonEl.classList.contains('calculator__button--operator')) {
     handleOperator(buttonEl);
   } else if (buttonEl.textContent === '=') {
-    displayInput.value = calculate(firstOperand, operator, displayInput.value);
+    if (firstOperand) displayInput.value = calculate(firstOperand, operator, displayInput.value);
   } else if (buttonEl.textContent === '.') {
     handlePoint(buttonEl);
   } else if (buttonEl.textContent === 'C') {
