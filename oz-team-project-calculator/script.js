@@ -26,6 +26,14 @@ const PRECISION = 1e10;
  */
 const roundResult = (num) => Math.round(num * PRECISION) / PRECISION;
 
+/**
+ * 두 피연산자에 대해 지정된 연산을 수행한다.
+ * @param {string} firstOperand - 첫 번째 피연산자
+ * @param {string} operator - 연산자 (/, *, -, +)
+ * @param {string} secondOperand - 두 번째 피연산자
+ * @returns {number} 계산 결과
+ * @throws {Error} 0으로 나누거나 알 수 없는 연산자일 경우
+ */
 const calculate = (firstOperand, operator, secondOperand) => {
   const a = parseFloat(firstOperand);
   const b = parseFloat(secondOperand);
@@ -118,32 +126,43 @@ const clear = () => {
   lastButton = 'clear';
 };
 
-/**
- * 버튼 클릭 이벤트 핸들러
- * @param {Event} event - 클릭 이벤트 객체
- */
 const handleButtonClick = (event) => {
   const buttonEl = event.target;
   const buttonText = buttonEl.textContent;
 
-  // 버튼 종류에 따라 적절한 동작 수행
-  if (buttonEl.classList.contains('calculator__button--number')) {
-    handleNumber(buttonEl);
-  } else if (buttonText === '.') {
-    handlePoint(buttonEl);
-  } else if (buttonText === 'C') {
-    clear();
-  } else if (buttonEl.classList.contains('calculator__button--operator')) {
-    handleOperator(buttonEl);
-    console.log(
-      `firstOperand: ${firstOperand}, operator: ${operator}, secondOperand: ${secondOperand}, lastResult: ${lastResult}`
-    );
-  } else if (buttonText === '=') {
-    handleEqualsButton();
-    console.log(
-      `firstOperand: ${firstOperand}, operator: ${operator}, secondOperand: ${secondOperand}, lastResult: ${lastResult}`
-    );
+  const buttonActions = {
+    number: () => handleNumber(buttonEl),
+    '.': () => handlePoint(buttonEl),
+    C: clear,
+    operator: () => {
+      handleOperator(buttonEl);
+      logCalculatorState();
+    },
+    '=': () => {
+      handleEqualsButton();
+      logCalculatorState();
+    },
+  };
+
+  const buttonType = buttonEl.classList.contains('calculator__button--number')
+    ? 'number'
+    : buttonEl.classList.contains('calculator__button--operator')
+    ? 'operator'
+    : buttonText;
+
+  const action = buttonActions[buttonType];
+  if (action) {
+    action();
   }
+};
+
+/**
+ * 현재 계산기의 상태를 콘솔에 로그로 출력한다.
+ */
+const logCalculatorState = () => {
+  console.log(
+    `firstOperand: ${firstOperand}, operator: ${operator}, secondOperand: ${secondOperand}, lastResult: ${lastResult}`
+  );
 };
 
 // 이벤트 리스너 등록
