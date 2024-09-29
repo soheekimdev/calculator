@@ -1,7 +1,7 @@
 'use strict';
 
 // DOM 요소 선택
-const displayInput = document.querySelector('.calculator__result-input');
+const displayResult = document.querySelector('.calculator__result');
 const buttons = document.querySelectorAll('.calculator__button');
 
 // 계산기 상태 변수
@@ -69,13 +69,13 @@ const handleOperator = (buttonEl) => {
   }
 
   if (operator && lastButton !== 'calculate') {
-    secondOperand = displayInput.value;
+    secondOperand = displayResult.textContent;
     const result = calculate(firstOperand, operator, secondOperand);
-    displayInput.value = result;
+    displayResult.textContent = result;
     firstOperand = result;
     lastResult = result;
   } else {
-    firstOperand = displayInput.value;
+    firstOperand = displayResult.textContent;
   }
 
   operator = buttonEl.textContent;
@@ -84,10 +84,10 @@ const handleOperator = (buttonEl) => {
 };
 
 const handleNumber = (buttonEl) => {
-  if (displayInput.value === '0' || isNewInput) {
-    displayInput.value = buttonEl.textContent;
+  if (displayResult.textContent === '0' || isNewInput) {
+    displayResult.textContent = buttonEl.textContent;
   } else {
-    displayInput.value += buttonEl.textContent;
+    displayResult.textContent += buttonEl.textContent;
   }
 
   isNewInput = false;
@@ -96,10 +96,10 @@ const handleNumber = (buttonEl) => {
 
 const handlePoint = (buttonEl) => {
   if (isNewInput) {
-    displayInput.value = '0.';
+    displayResult.textContent = '0.';
     isNewInput = false;
-  } else if (!displayInput.value.includes('.')) {
-    displayInput.value += buttonEl.textContent;
+  } else if (!displayResult.textContent.includes('.')) {
+    displayResult.textContent += buttonEl.textContent;
   }
 
   lastButton = 'point';
@@ -109,11 +109,11 @@ const handleEqualsButton = () => {
   if (lastButton === 'operator') return;
   if (firstOperand === null) return;
   if (!isNewInput) {
-    secondOperand = displayInput.value;
+    secondOperand = displayResult.textContent;
   }
 
   const result = calculate(firstOperand, operator, secondOperand);
-  displayInput.value = result;
+  displayResult.textContent = result;
   firstOperand = result;
   lastResult = result;
   isNewInput = true;
@@ -124,18 +124,18 @@ const clear = () => {
   firstOperand = null;
   operator = null;
   lastResult = null;
-  displayInput.value = '0';
+  displayResult.textContent = '0';
   lastButton = 'clear';
 };
 
 const handleSwitchSign = () => {
-  displayInput.value *= -1;
+  displayResult.textContent *= -1;
   lastButton = 'switchSign';
 };
 
 const handlePercent = () => {
-  const result = (displayInput.value /= 100);
-  displayInput.value = result;
+  const result = (displayResult.textContent /= 100);
+  displayResult.textContent = result;
   lastResult = result;
   isNewInput = true;
   lastButton = 'percent';
