@@ -111,6 +111,7 @@ const handleEqualsButton = () => {
   if (!isNewInput) {
     secondOperand = displayInput.value;
   }
+
   const result = calculate(firstOperand, operator, secondOperand);
   displayInput.value = result;
   firstOperand = result;
