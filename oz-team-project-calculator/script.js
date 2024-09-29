@@ -7,8 +7,16 @@ const buttons = document.querySelectorAll('.calculator__button');
 // 계산기 상태 변수
 let firstOperand = null;
 let operator = null;
+let secondOperand = null;
 let lastResult = null;
+let lastButton = null;
 let isNewInput = false;
+
+/**
+ * 소수점 이하 10자리까지의 정밀도를 위한 상수
+ * 1e10은 10^10을 의미하며, 소수점 이하 10자리까지의 정밀도를 제공한다.
+ */
+const PRECISION = 1e10;
 
 /**
  * 숫자를 소수점 이하 10자리까지 반올림한다.
@@ -16,15 +24,8 @@ let isNewInput = false;
  * @param {number} num - 반올림할 숫자
  * @returns {number} 소수점 이하 10자리까지 반올림된 숫자
  */
-const roundResult = (num) => Math.round(num * 1e10) / 1e10;
+const roundResult = (num) => Math.round(num * PRECISION) / PRECISION;
 
-/**
- * 두 숫자에 대해 지정된 연산을 수행한다.
- * @param {string} firstOperand - 첫 번째 피연산자
- * @param {string} operator - 연산자 (/, *, -, +)
- * @param {string} secondOperand - 두 번째 피연산자
- * @returns {string} 계산 결과 또는 에러 메시지
- */
 const calculate = (firstOperand, operator, secondOperand) => {
   const a = parseFloat(firstOperand);
   const b = parseFloat(secondOperand);
@@ -49,21 +50,29 @@ const calculate = (firstOperand, operator, secondOperand) => {
   }
 
   if (!isFinite(result)) throw new Error('유효하지 않은 결과');
+  lastButton = 'calculate';
   return roundResult(result);
 };
 
 const handleOperator = (buttonEl) => {
-  if (lastResult === null) {
-    firstOperand = displayInput.value;
-  } else if (firstOperand === lastResult) {
-    displayInput.value = calculate(firstOperand, operator, displayInput.value);
-    firstOperand = displayInput.value;
-    lastResult = displayInput.value;
-  } else {
-    firstOperand = lastResult;
+  if (lastButton === 'operator') {
+    operator = buttonEl.textContent;
+    return;
   }
+
+  if (operator && lastButton !== 'calculate') {
+    secondOperand = displayInput.value;
+    const result = calculate(firstOperand, operator, secondOperand);
+    displayInput.value = result;
+    firstOperand = result;
+    lastResult = result;
+  } else {
+    firstOperand = displayInput.value;
+  }
+
   operator = buttonEl.textContent;
   isNewInput = true;
+  lastButton = 'operator';
 };
 
 const handleNumber = (buttonEl) => {
@@ -72,7 +81,9 @@ const handleNumber = (buttonEl) => {
   } else {
     displayInput.value += buttonEl.textContent;
   }
+
   isNewInput = false;
+  lastButton = 'number';
 };
 
 const handlePoint = (buttonEl) => {
@@ -82,6 +93,21 @@ const handlePoint = (buttonEl) => {
   } else if (!displayInput.value.includes('.')) {
     displayInput.value += buttonEl.textContent;
   }
+
+  lastButton = 'point';
+};
+
+const handleEqualsButton = () => {
+  if (lastButton === 'operator') return;
+  if (firstOperand === null) return;
+  if (!isNewInput) {
+    secondOperand = displayInput.value;
+  }
+  const result = calculate(firstOperand, operator, secondOperand);
+  displayInput.value = result;
+  firstOperand = result;
+  lastResult = result;
+  isNewInput = true;
 };
 
 const clear = () => {
@@ -89,6 +115,7 @@ const clear = () => {
   operator = null;
   lastResult = null;
   displayInput.value = '0';
+  lastButton = 'clear';
 };
 
 /**
@@ -102,23 +129,20 @@ const handleButtonClick = (event) => {
   // 버튼 종류에 따라 적절한 동작 수행
   if (buttonEl.classList.contains('calculator__button--number')) {
     handleNumber(buttonEl);
-  } else if (buttonEl.classList.contains('calculator__button--operator')) {
-    handleOperator(buttonEl);
-
-    console.log(`firstOperand: ${firstOperand}, operator: ${operator}, lastResult: ${lastResult}`);
-  } else if (buttonText === '=') {
-    if (firstOperand) {
-      const result = calculate(firstOperand, operator, displayInput.value);
-      displayInput.value = result;
-      isNewInput = true;
-      lastResult = result;
-
-      console.log(`firstOperand: ${firstOperand}, operator: ${operator}, lastResult: ${lastResult}`);
-    }
   } else if (buttonText === '.') {
     handlePoint(buttonEl);
   } else if (buttonText === 'C') {
     clear();
+  } else if (buttonEl.classList.contains('calculator__button--operator')) {
+    handleOperator(buttonEl);
+    console.log(
+      `firstOperand: ${firstOperand}, operator: ${operator}, secondOperand: ${secondOperand}, lastResult: ${lastResult}`
+    );
+  } else if (buttonText === '=') {
+    handleEqualsButton();
+    console.log(
+      `firstOperand: ${firstOperand}, operator: ${operator}, secondOperand: ${secondOperand}, lastResult: ${lastResult}`
+    );
   }
 };
 
