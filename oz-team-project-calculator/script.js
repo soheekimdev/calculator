@@ -117,6 +117,7 @@ const handleEqualsButton = () => {
   firstOperand = result;
   lastResult = result;
   isNewInput = true;
+  lastButton = 'equals';
 };
 
 const clear = () => {
@@ -127,18 +128,33 @@ const clear = () => {
   lastButton = 'clear';
 };
 
+const handleSwitchSign = () => {
+  displayInput.value *= -1;
+  lastButton = 'switchSign';
+};
+
+const handlePercent = () => {
+  const result = (displayInput.value /= 100);
+  displayInput.value = result;
+  lastResult = result;
+  isNewInput = true;
+  lastButton = 'percent';
+};
+
 const handleButtonClick = (event) => {
   const buttonEl = event.target;
   const buttonText = buttonEl.textContent;
 
   const buttonActions = {
-    number: () => handleNumber(buttonEl),
-    '.': () => handlePoint(buttonEl),
     C: clear,
+    number: () => handleNumber(buttonEl),
     operator: () => {
       handleOperator(buttonEl);
       logCalculatorState();
     },
+    '.': () => handlePoint(buttonEl),
+    '±': handleSwitchSign,
+    '%': handlePercent,
     '=': () => {
       handleEqualsButton();
       logCalculatorState();
