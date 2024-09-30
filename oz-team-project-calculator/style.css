@@ -66,25 +66,22 @@ button {
 .calculator__header-button--maximize {
   background-color: var(--color-green);
 }
-.calculator__display {
+.calculator__display-container {
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
   border-radius: 4px;
   height: 64px;
-  font-size: 40px;
 }
-.calculator__result {
-  width: 100%;
+.calculator__display {
   padding: 8px;
   border: 0;
   outline: 0;
   background-color: transparent;
   color: var(--color-white);
-  font-size: 1em;
+  font-size: 40px;
   text-align: right;
-  transition: font-size 0.2s;
-  overflow: hidden;
+  transition: font-size 0.1s;
 }
 .calculator__buttons {
   display: flex;

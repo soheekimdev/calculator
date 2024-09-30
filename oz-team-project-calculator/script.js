@@ -1,7 +1,7 @@
 'use strict';
 
 // DOM 요소 선택
-const displayResult = document.querySelector('.calculator__result');
+const displayInput = document.querySelector('.calculator__display');
 const buttons = document.querySelectorAll('.calculator__button');
 
 // 계산기 상태 변수
@@ -69,13 +69,13 @@ const handleOperator = (buttonEl) => {
   }
 
   if (operator && lastButton !== 'calculate') {
-    secondOperand = displayResult.textContent;
+    secondOperand = displayInput.textContent;
     const result = calculate(firstOperand, operator, secondOperand);
-    displayResult.textContent = result;
+    displayInput.textContent = result;
     firstOperand = result;
     lastResult = result;
   } else {
-    firstOperand = displayResult.textContent;
+    firstOperand = displayInput.textContent;
   }
 
   operator = buttonEl.textContent;
@@ -84,10 +84,10 @@ const handleOperator = (buttonEl) => {
 };
 
 const handleNumber = (buttonEl) => {
-  if (displayResult.textContent === '0' || isNewInput) {
-    displayResult.textContent = buttonEl.textContent;
+  if (displayInput.textContent === '0' || isNewInput) {
+    displayInput.textContent = buttonEl.textContent;
   } else {
-    displayResult.textContent += buttonEl.textContent;
+    displayInput.textContent += buttonEl.textContent;
   }
 
   isNewInput = false;
@@ -96,10 +96,10 @@ const handleNumber = (buttonEl) => {
 
 const handlePoint = (buttonEl) => {
   if (isNewInput) {
-    displayResult.textContent = '0.';
+    displayInput.textContent = '0.';
     isNewInput = false;
-  } else if (!displayResult.textContent.includes('.')) {
-    displayResult.textContent += buttonEl.textContent;
+  } else if (!displayInput.textContent.includes('.')) {
+    displayInput.textContent += buttonEl.textContent;
   }
 
   lastButton = 'point';
@@ -109,11 +109,11 @@ const handleEqualsButton = () => {
   if (lastButton === 'operator') return;
   if (firstOperand === null) return;
   if (!isNewInput) {
-    secondOperand = displayResult.textContent;
+    secondOperand = displayInput.textContent;
   }
 
   const result = calculate(firstOperand, operator, secondOperand);
-  displayResult.textContent = result;
+  displayInput.textContent = result;
   firstOperand = result;
   lastResult = result;
   isNewInput = true;
@@ -124,18 +124,18 @@ const clear = () => {
   firstOperand = null;
   operator = null;
   lastResult = null;
-  displayResult.textContent = '0';
+  displayInput.textContent = '0';
   lastButton = 'clear';
 };
 
 const handleSwitchSign = () => {
-  displayResult.textContent *= -1;
+  displayInput.textContent *= -1;
   lastButton = 'switchSign';
 };
 
 const handlePercent = () => {
-  const result = (displayResult.textContent /= 100);
-  displayResult.textContent = result;
+  const result = (displayInput.textContent /= 100);
+  displayInput.textContent = result;
   lastResult = result;
   isNewInput = true;
   lastButton = 'percent';
@@ -170,6 +170,24 @@ const handleButtonClick = (event) => {
   const action = buttonActions[buttonType];
   if (action) {
     action();
+  }
+
+  adjustFontSize();
+};
+
+const adjustFontSize = () => {
+  const containerWidth = document.querySelector('.calculator__display-container').offsetWidth;
+  const textWidth = displayInput.scrollWidth;
+  const ratio = containerWidth / textWidth;
+  const initialFontSize = 40;
+  const currentFontSize = parseFloat(window.getComputedStyle(displayInput).fontSize);
+
+  if (textWidth > containerWidth) {
+    const newFontSize = Math.floor(currentFontSize * ratio);
+    displayInput.style.fontSize = `${newFontSize}px`;
+  } else if (currentFontSize < initialFontSize) {
+    const newFontSize = Math.min(initialFontSize, Math.floor(currentFontSize * ratio));
+    displayInput.style.fontSize = `${newFontSize}px`;
   }
 };
 
