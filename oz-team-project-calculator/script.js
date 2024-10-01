@@ -8,9 +8,9 @@ const buttons = document.querySelectorAll('.calculator__button');
 let firstOperand = null;
 let operator = null;
 let secondOperand = null;
-let lastResult = null;
-let lastButton = null;
-let isNewInput = false;
+let lastResult = null; // TODO: 사용하지 않고도 같은 기능이 동작할 수 있는지 검토
+let lastButton = null; // TODO: 사용하지 않고도 같은 기능이 동작할 수 있는지 검토
+let isNewInput = false; // TODO: 사용하지 않고도 같은 기능이 동작할 수 있는지 검토
 
 /**
  * 소수점 이하 10자리까지의 정밀도를 위한 상수
@@ -58,17 +58,16 @@ const calculate = (firstOperand, operator, secondOperand) => {
   }
 
   if (!isFinite(result)) throw new Error('유효하지 않은 결과');
-  lastButton = 'calculate';
   return roundResult(result);
 };
 
 const handleOperator = (buttonEl) => {
-  if (lastButton === 'operator') {
+  if (lastButton === 'operator' || lastButton === 'switchSign' || lastButton === 'percent') {
     operator = buttonEl.textContent;
     return;
   }
 
-  if (operator && lastButton !== 'calculate') {
+  if (operator && lastButton !== 'equals') {
     secondOperand = display.textContent;
     const result = calculate(firstOperand, operator, secondOperand);
     display.textContent = result;
@@ -106,8 +105,7 @@ const handlePoint = (buttonEl) => {
 };
 
 const handleEqualsButton = () => {
-  if (lastButton === 'operator') return;
-  if (firstOperand === null) return;
+  if (lastButton === 'operator' || firstOperand === null) return;
   if (!isNewInput) {
     secondOperand = display.textContent;
   }
