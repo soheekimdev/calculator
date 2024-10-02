@@ -19,7 +19,8 @@ button {
 /* Custom variables */
 :root {
   --color-primary: #239a82;
-  --color-background: #262425;
+  --color-background: linear-gradient(to right bottom, #73f4a6, #cad1b0, #cb6381);
+  --color-calculator: #262425;
   --color-button: #3f4249;
   --color-button-function: #303235;
   --color-button-operator: var(--color-primary);
@@ -28,14 +29,24 @@ button {
   --color-yellow: #ffe100;
   --color-green: #7fe73a;
   --gap-button: 3px;
+  --padding-calculator-outer: 16px;
 }
 
 /* Container */
 .container {
-  height: 100%;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  padding: 16px;
+  background: var(--color-background);
+}
+
+/* Icon */
+.icon {
+  width: 60px;
+  height: 60px;
+  border: 1px solid black;
+  cursor: pointer;
 }
 
 /* Calculator */
@@ -43,14 +54,20 @@ button {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 320px;
-  padding: 16px;
-  background-color: var(--color-background);
+  padding: 0 0 var(--padding-calculator-outer);
+  background-color: var(--color-calculator);
   border-radius: 6px;
 }
 .calculator__header {
   display: flex;
   gap: 8px;
+  padding: var(--padding-calculator-outer) var(--padding-calculator-outer) 0;
+  cursor: move;
 }
 .calculator__header-button {
   width: 14px;
@@ -66,15 +83,31 @@ button {
 .calculator__header-button--maximize {
   background-color: var(--color-green);
 }
+.calculator__header:hover .calculator__header-button {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+}
+.calculator__header:hover .calculator__header-button--close {
+  background-image: url('./img/close.svg');
+}
+.calculator__header:hover .calculator__header-button--minimize {
+  background-image: url('./img/minus.svg');
+}
+.calculator__header:hover .calculator__header-button--maximize {
+  background-image: url('./img/maximize.svg');
+  background-size: 10px;
+}
 .calculator__display-container {
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
   border-radius: 4px;
   height: 64px;
+  overflow: hidden;
 }
 .calculator__display {
-  padding: 8px;
+  padding: 8px var(--padding-calculator-outer);
   border: 0;
   outline: 0;
   background-color: transparent;
@@ -88,6 +121,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: var(--gap-button);
+  padding: 0 var(--padding-calculator-outer);
 }
 .calculator__button {
   flex: 1 0 calc(25% - var(--gap-button));
