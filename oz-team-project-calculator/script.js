@@ -127,13 +127,17 @@ const clear = () => {
 };
 
 const handleSwitchSign = () => {
-  display.textContent *= -1;
+  const result = display.textContent * -1;
+  display.textContent = result;
+  firstOperand = result;
   lastButton = 'switchSign';
+  isNewInput = true;
 };
 
 const handlePercent = () => {
-  const result = (display.textContent /= 100);
+  const result = roundResult(display.textContent / 100);
   display.textContent = result;
+  firstOperand = result;
   lastResult = result;
   isNewInput = true;
   lastButton = 'percent';
