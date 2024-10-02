@@ -3,6 +3,8 @@
 웹 기반의 기본 계산기 애플리케이션입니다.
 HTML, CSS, JavaScript를 사용하여 구현되었습니다.
 
+![calculator](https://github.com/user-attachments/assets/af58765d-88fc-461e-a2ae-4eceb8021ae0)
+
 ## 주요 기능
 
 - 기본 수학 연산 (덧셈, 뺄셈, 곱셈, 나눗셈)
