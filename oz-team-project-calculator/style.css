@@ -130,6 +130,7 @@ button {
   background-color: var(--color-button);
   color: var(--color-white);
   font-size: 18px;
+  user-select: none;
 }
 .calculator__button:hover {
   filter: brightness(1.2);
