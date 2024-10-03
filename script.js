@@ -7,6 +7,7 @@
 // DOM 요소 선택
 const display = document.querySelector('.calculator__display');
 const buttons = document.querySelectorAll('.calculator__button');
+const pop = document.querySelector('.pop');
 
 // 계산기 상태 변수
 const calcState = {
@@ -214,7 +215,24 @@ const logCalculatorState = () => {
   );
 };
 
+const handleCopy = async () => {
+  try {
+    await navigator.clipboard.writeText(display.textContent);
+
+    pop.style.bottom = '40px';
+    pop.style.opacity = 1;
+
+    setTimeout(() => {
+      pop.style.bottom = '-1000px';
+      pop.style.opacity = 0;
+    }, 2000);
+  } catch (err) {
+    console.error('클립보드 복사 실패:', err);
+  }
+};
+
 // 이벤트 리스너 등록
 buttons.forEach((button) => {
   button.addEventListener('click', handleButtonClick);
 });
+display.addEventListener('click', handleCopy);
