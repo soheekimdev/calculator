@@ -189,10 +189,14 @@ const handleButtonClick = (event) => {
 
 const adjustFontSize = () => {
   const containerWidth = document.querySelector('.calculator__display-container').offsetWidth;
-  const textWidth = display.scrollWidth;
+  const displayStyle = getComputedStyle(display);
+  const displayPadding = parseFloat(displayStyle.paddingLeft) + parseFloat(displayStyle.paddingRight);
+  const textWidth = display.scrollWidth + displayPadding;
   const ratio = containerWidth / textWidth;
   const initialFontSize = 40;
   const currentFontSize = parseFloat(window.getComputedStyle(display).fontSize);
+
+  console.log(displayPadding);
 
   if (textWidth > containerWidth) {
     const newFontSize = Math.floor(currentFontSize * ratio);
