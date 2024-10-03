@@ -196,8 +196,6 @@ const adjustFontSize = () => {
   const initialFontSize = 40;
   const currentFontSize = parseFloat(window.getComputedStyle(display).fontSize);
 
-  console.log(displayPadding);
-
   if (textWidth > containerWidth) {
     const newFontSize = Math.floor(currentFontSize * ratio);
     display.style.fontSize = `${newFontSize}px`;
