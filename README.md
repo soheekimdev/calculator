@@ -17,7 +17,7 @@ HTML, CSS, JavaScript를 사용하여 구현되었습니다.
 
 ## 주요 함수
 
-### `calculate(firstOperand, operator, secondOperand)`
+### `calculate(firstOperand, secondOperand, operator)`
 두 피연산자에 대해 지정된 연산을 수행합니다.
 
 ### `roundResult(num)`

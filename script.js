@@ -1,16 +1,22 @@
 'use strict';
 
+// TODO: 디스플레이 인풋 클릭 시 내용 복사되고 알림 팝업 뜨는 기능 추가
+// TODO: 현재는 사용되지 않는 .calculator__header 및 .calculator__header-button에 대한 처리 (기능 추가 또는 UI 삭제)
+// TODO: 필수적으로 사용하지 않는 변수 (lastResult, lastButton, isNewInput) 제거 및 리팩토링
+
 // DOM 요소 선택
 const display = document.querySelector('.calculator__display');
 const buttons = document.querySelectorAll('.calculator__button');
 
 // 계산기 상태 변수
-let firstOperand = null;
-let operator = null;
-let secondOperand = null;
-let lastResult = null; // TODO: 사용하지 않고도 같은 기능이 동작할 수 있는지 검토
-let lastButton = null; // TODO: 사용하지 않고도 같은 기능이 동작할 수 있는지 검토
-let isNewInput = false; // TODO: 사용하지 않고도 같은 기능이 동작할 수 있는지 검토
+const calcState = {
+  firstOperand: null,
+  operator: null,
+  secondOperand: null,
+  lastResult: null,
+  lastButton: null,
+  isNewInput: false,
+};
 
 /**
  * 소수점 이하 10자리까지의 정밀도를 위한 상수
@@ -34,7 +40,7 @@ const roundResult = (num) => Math.round(num * PRECISION) / PRECISION;
  * @returns {number} 계산 결과
  * @throws {Error} 0으로 나누거나 알 수 없는 연산자일 경우
  */
-const calculate = (firstOperand, operator, secondOperand) => {
+const calculate = (firstOperand, secondOperand, operator) => {
   const a = parseFloat(firstOperand);
   const b = parseFloat(secondOperand);
   let result;
@@ -62,85 +68,89 @@ const calculate = (firstOperand, operator, secondOperand) => {
 };
 
 const handleOperator = (buttonEl) => {
-  if (lastButton === 'operator' || lastButton === 'switchSign' || lastButton === 'percent') {
-    operator = buttonEl.textContent;
+  if (
+    calcState.lastButton === 'operator' ||
+    calcState.lastButton === 'switchSign' ||
+    calcState.lastButton === 'percent'
+  ) {
+    calcState.operator = buttonEl.textContent;
     return;
   }
 
-  if (operator && lastButton !== 'equals') {
-    secondOperand = display.textContent;
-    const result = calculate(firstOperand, operator, secondOperand);
+  if (calcState.operator && calcState.lastButton !== 'equals') {
+    calcState.secondOperand = display.textContent;
+    const result = calculate(calcState.firstOperand, calcState.secondOperand, calcState.operator);
     display.textContent = result;
-    firstOperand = result;
-    lastResult = result;
+    calcState.firstOperand = result;
+    calcState.lastResult = result;
   } else {
-    firstOperand = display.textContent;
+    calcState.firstOperand = display.textContent;
   }
 
-  operator = buttonEl.textContent;
-  isNewInput = true;
-  lastButton = 'operator';
+  calcState.operator = buttonEl.textContent;
+  calcState.isNewInput = true;
+  calcState.lastButton = 'operator';
 };
 
 const handleNumber = (buttonEl) => {
-  if (display.textContent === '0' || isNewInput) {
+  if (display.textContent === '0' || calcState.isNewInput) {
     display.textContent = buttonEl.textContent;
   } else {
     display.textContent += buttonEl.textContent;
   }
 
-  isNewInput = false;
-  lastButton = 'number';
+  calcState.isNewInput = false;
+  calcState.lastButton = 'number';
 };
 
 const handlePoint = (buttonEl) => {
-  if (isNewInput) {
+  if (calcState.isNewInput) {
     display.textContent = '0.';
-    isNewInput = false;
+    calcState.isNewInput = false;
   } else if (!display.textContent.includes('.')) {
     display.textContent += buttonEl.textContent;
   }
 
-  lastButton = 'point';
+  calcState.lastButton = 'point';
 };
 
 const handleEqualsButton = () => {
-  if (lastButton === 'operator' || firstOperand === null) return;
-  if (!isNewInput) {
-    secondOperand = display.textContent;
+  if (calcState.lastButton === 'operator' || calcState.firstOperand === null) return;
+  if (!calcState.isNewInput) {
+    calcState.secondOperand = display.textContent;
   }
 
-  const result = calculate(firstOperand, operator, secondOperand);
+  const result = calculate(calcState.firstOperand, calcState.secondOperand, calcState.operator);
   display.textContent = result;
-  firstOperand = result;
-  lastResult = result;
-  isNewInput = true;
-  lastButton = 'equals';
+  calcState.firstOperand = result;
+  calcState.lastResult = result;
+  calcState.isNewInput = true;
+  calcState.lastButton = 'equals';
 };
 
 const clear = () => {
-  firstOperand = null;
-  operator = null;
-  lastResult = null;
+  calcState.firstOperand = null;
+  calcState.operator = null;
+  calcState.lastResult = null;
   display.textContent = '0';
-  lastButton = 'clear';
+  calcState.lastButton = 'clear';
 };
 
 const handleSwitchSign = () => {
   const result = display.textContent * -1;
   display.textContent = result;
-  firstOperand = result;
-  lastButton = 'switchSign';
-  isNewInput = true;
+  calcState.firstOperand = result;
+  calcState.lastButton = 'switchSign';
+  calcState.isNewInput = true;
 };
 
 const handlePercent = () => {
   const result = roundResult(display.textContent / 100);
   display.textContent = result;
-  firstOperand = result;
-  lastResult = result;
-  isNewInput = true;
-  lastButton = 'percent';
+  calcState.firstOperand = result;
+  calcState.lastResult = result;
+  calcState.isNewInput = true;
+  calcState.lastButton = 'percent';
 };
 
 const handleButtonClick = (event) => {
@@ -198,7 +208,7 @@ const adjustFontSize = () => {
  */
 const logCalculatorState = () => {
   console.log(
-    `firstOperand: ${firstOperand}, operator: ${operator}, secondOperand: ${secondOperand}, lastResult: ${lastResult}`
+    `firstOperand: ${calcState.firstOperand}\nsecondOperand: ${calcState.secondOperand}\noperator: ${calcState.operator}`
   );
 };
 
