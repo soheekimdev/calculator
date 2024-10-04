@@ -1,6 +1,5 @@
 'use strict';
 
-// TODO: 디스플레이 인풋 클릭 시 내용 복사되고 알림 팝업 뜨는 기능 추가
 // TODO: 현재는 사용되지 않는 .calculator__header 및 .calculator__header-button에 대한 처리 (기능 추가 또는 UI 삭제)
 // TODO: 필수적으로 사용하지 않는 변수 (lastResult, lastButton, isNewInput) 제거 및 리팩토링
 
@@ -117,7 +116,7 @@ const handlePoint = (buttonEl) => {
 
 const handleEqualsButton = () => {
   if (calcState.lastButton === 'operator' || calcState.firstOperand === null) return;
-  if (!calcState.isNewInput) {
+  if (calcState.secondOperand === null || !calcState.isNewInput) {
     calcState.secondOperand = display.textContent;
   }
 
@@ -131,6 +130,7 @@ const handleEqualsButton = () => {
 
 const clear = () => {
   calcState.firstOperand = null;
+  calcState.secondOperand = null;
   calcState.operator = null;
   calcState.lastResult = null;
   display.textContent = '0';
@@ -141,8 +141,8 @@ const handleSwitchSign = () => {
   const result = display.textContent * -1;
   display.textContent = result;
   calcState.firstOperand = result;
-  calcState.lastButton = 'switchSign';
   calcState.isNewInput = true;
+  calcState.lastButton = 'switchSign';
 };
 
 const handlePercent = () => {
@@ -154,6 +154,39 @@ const handlePercent = () => {
   calcState.lastButton = 'percent';
 };
 
+const adjustFontSize = () => {
+  const containerWidth = document.querySelector('.calculator__display-container').offsetWidth;
+  const displayStyle = getComputedStyle(display);
+  const displayPadding = parseFloat(displayStyle.paddingLeft) + parseFloat(displayStyle.paddingRight);
+  const textWidth = display.scrollWidth + displayPadding;
+  const ratio = containerWidth / textWidth;
+  const initialFontSize = 40;
+  const currentFontSize = parseFloat(window.getComputedStyle(display).fontSize);
+
+  if (textWidth > containerWidth) {
+    const newFontSize = Math.floor(currentFontSize * ratio);
+    display.style.fontSize = `${newFontSize}px`;
+  } else if (currentFontSize < initialFontSize) {
+    const newFontSize = Math.min(initialFontSize, Math.floor(currentFontSize * ratio));
+    display.style.fontSize = `${newFontSize}px`;
+  }
+};
+
+/**
+ * 현재 계산기의 상태를 콘솔에 로그로 출력한다.
+ */
+const logCalculatorState = () => {
+  console.log(
+    `firstOperand: ${calcState.firstOperand}\nsecondOperand: ${calcState.secondOperand}\noperator: ${calcState.operator}`
+  );
+};
+
+/**
+ * 계산기 버튼 클릭 이벤트를 처리하는 함수
+ * 클릭된 버튼의 종류에 따라 적절한 동작을 수행한다.
+ * 모든 버튼 조작 후에는 디스플레이의 폰트 크기를 조정한다.
+ * @param {Event} event - 버튼 클릭 이벤트 객체
+ */
 const handleButtonClick = (event) => {
   const buttonEl = event.target;
   const buttonText = buttonEl.textContent;
@@ -186,33 +219,6 @@ const handleButtonClick = (event) => {
   }
 
   adjustFontSize();
-};
-
-const adjustFontSize = () => {
-  const containerWidth = document.querySelector('.calculator__display-container').offsetWidth;
-  const displayStyle = getComputedStyle(display);
-  const displayPadding = parseFloat(displayStyle.paddingLeft) + parseFloat(displayStyle.paddingRight);
-  const textWidth = display.scrollWidth + displayPadding;
-  const ratio = containerWidth / textWidth;
-  const initialFontSize = 40;
-  const currentFontSize = parseFloat(window.getComputedStyle(display).fontSize);
-
-  if (textWidth > containerWidth) {
-    const newFontSize = Math.floor(currentFontSize * ratio);
-    display.style.fontSize = `${newFontSize}px`;
-  } else if (currentFontSize < initialFontSize) {
-    const newFontSize = Math.min(initialFontSize, Math.floor(currentFontSize * ratio));
-    display.style.fontSize = `${newFontSize}px`;
-  }
-};
-
-/**
- * 현재 계산기의 상태를 콘솔에 로그로 출력한다.
- */
-const logCalculatorState = () => {
-  console.log(
-    `firstOperand: ${calcState.firstOperand}\nsecondOperand: ${calcState.secondOperand}\noperator: ${calcState.operator}`
-  );
 };
 
 const handleCopy = async () => {
