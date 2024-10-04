@@ -3,7 +3,8 @@
 웹 기반의 기본 계산기 애플리케이션입니다.
 HTML, CSS, JavaScript를 사용하여 구현되었습니다.
 
-![calculator](https://github.com/user-attachments/assets/af58765d-88fc-461e-a2ae-4eceb8021ae0)
+![calculator_v2](https://github.com/user-attachments/assets/84047004-24f1-484e-88b8-80f976b56c64)
+
 
 ## 주요 기능
 
