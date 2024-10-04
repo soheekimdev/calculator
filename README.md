@@ -40,5 +40,5 @@ HTML, CSS, JavaScript를 사용하여 구현되었습니다.
 
 ## 향후 개선 사항
 
-- 현재는 사용되지 않는 `.calculator__header` 및 `.calculator__header-button`에 대한 처리
 - 필수적으로 사용하지 않는 변수 (lastResult, lastButton, isNewInput) 제거 및 리팩토링
+- 현재는 사용되지 않는 .calculator__header 및 .calculator__header-button에 대한 처리 (기능 추가 또는 UI 삭제)
