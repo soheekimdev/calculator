@@ -1,6 +1,6 @@
 # JavaScript 계산기 프로그램
 
-웹 기반의 기본 계산기 애플리케이션입니다.
+웹 기반의 간단한 계산기 애플리케이션입니다.
 HTML, CSS, JavaScript를 사용하여 구현되었습니다.
 
 ![calculator_v2](https://github.com/user-attachments/assets/84047004-24f1-484e-88b8-80f976b56c64)
@@ -15,6 +15,7 @@ HTML, CSS, JavaScript를 사용하여 구현되었습니다.
 - 동적 폰트 크기 조절 (긴 숫자 입력 시 자동 조절)
 - 에러 처리 (0으로 나누기 등)
 - 연속 계산 지원
+- 결과값 클립보드 복사 기능
 
 ## 주요 함수
 
