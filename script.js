@@ -1,246 +1,228 @@
 'use strict';
 
-// TODO: 계산기 드래그 앤 드롭 구현
-// TODO: 관심사의 분리 (현재는 UI 조작과 비즈니스 로직이 혼재되어 있어서 유지보수가 힘들다)
-// TODO: 현재는 사용되지 않는 .calculator__header 및 .calculator__header-button에 대한 처리 (기능 추가 또는 UI 삭제)
-// TODO: 필수적으로 사용하지 않는 변수 (lastResult, lastButton, isNewInput) 제거 및 리팩토링
-
-// DOM 요소 선택
-const display = document.querySelector('.calculator__display');
-const buttons = document.querySelectorAll('.calculator__button');
-const pop = document.querySelector('.pop');
-
-// 계산기 상태 변수
-const calcState = {
-  firstOperand: null,
-  operator: null,
-  secondOperand: null,
-  lastResult: null,
-  lastButton: null,
-  isNewInput: false,
-};
-
-/**
- * 소수점 이하 10자리까지의 정밀도를 위한 상수
- * 1e10은 10^10을 의미하며, 소수점 이하 10자리까지의 정밀도를 제공한다.
- */
-const PRECISION = 1e10;
-
-/**
- * 숫자를 소수점 이하 10자리까지 반올림한다.
- * 부동소수점 연산의 정밀도 문제를 완화하는 데 사용된다.
- * @param {number} num - 반올림할 숫자
- * @returns {number} 소수점 이하 10자리까지 반올림된 숫자
- */
-const roundResult = (num) => Math.round(num * PRECISION) / PRECISION;
-
-/**
- * 두 피연산자에 대해 지정된 연산을 수행한다.
- * @param {string} firstOperand - 첫 번째 피연산자
- * @param {string} operator - 연산자 (/, *, -, +)
- * @param {string} secondOperand - 두 번째 피연산자
- * @returns {number} 계산 결과
- * @throws {Error} 0으로 나누거나 알 수 없는 연산자일 경우
- */
-const calculate = (firstOperand, secondOperand, operator) => {
-  const a = parseFloat(firstOperand);
-  const b = parseFloat(secondOperand);
-  let result;
-
-  switch (operator) {
-    case '/':
-      if (b === 0) throw new Error('0으로 나눌 수 없습니다');
-      result = a / b;
-      break;
-    case '*':
-      result = a * b;
-      break;
-    case '-':
-      result = a - b;
-      break;
-    case '+':
-      result = a + b;
-      break;
-    default:
-      throw new Error('알 수 없는 연산자');
+class CalculatorDisplay {
+  constructor(element) {
+    this.element = element;
+    this.value = '0';
+    this.init();
   }
 
-  if (!isFinite(result)) throw new Error('유효하지 않은 결과');
-  return roundResult(result);
-};
-
-const handleOperator = (buttonEl) => {
-  if (
-    calcState.lastButton === 'operator' ||
-    calcState.lastButton === 'switchSign' ||
-    calcState.lastButton === 'percent'
-  ) {
-    calcState.operator = buttonEl.textContent;
-    return;
+  init() {
+    this.element.textContent = this.value;
   }
 
-  if (calcState.operator && calcState.lastButton !== 'equals') {
-    calcState.secondOperand = display.textContent;
-    const result = calculate(calcState.firstOperand, calcState.secondOperand, calcState.operator);
-    display.textContent = result;
-    calcState.firstOperand = result;
-    calcState.lastResult = result;
-  } else {
-    calcState.firstOperand = display.textContent;
+  updateValue(newValue) {
+    this.value = newValue;
+    this.element.textContent = this.value;
+    this.adjustFontSize();
   }
 
-  calcState.operator = buttonEl.textContent;
-  calcState.isNewInput = true;
-  calcState.lastButton = 'operator';
-};
+  adjustFontSize() {
+    const containerWidth = this.element.parentElement.offsetWidth;
+    const displayStyle = getComputedStyle(this.element);
+    const displayPadding = parseFloat(displayStyle.paddingLeft) + parseFloat(displayStyle.paddingRight);
+    const textWidth = this.element.scrollWidth + displayPadding;
+    const ratio = containerWidth / textWidth;
+    const initialFontSize = 40;
+    const currentFontSize = parseFloat(window.getComputedStyle(this.element).fontSize);
 
-const handleNumber = (buttonEl) => {
-  if (display.textContent === '0' || calcState.isNewInput) {
-    display.textContent = buttonEl.textContent;
-  } else {
-    display.textContent += buttonEl.textContent;
+    if (textWidth > containerWidth) {
+      const newFontSize = Math.floor(currentFontSize * ratio);
+      this.element.style.fontSize = `${newFontSize}px`;
+    } else if (currentFontSize < initialFontSize) {
+      const newFontSize = Math.min(initialFontSize, Math.floor(currentFontSize * ratio));
+      this.element.style.fontSize = `${newFontSize}px`;
+    }
   }
 
-  calcState.isNewInput = false;
-  calcState.lastButton = 'number';
-};
-
-const handlePoint = (buttonEl) => {
-  if (calcState.isNewInput) {
-    display.textContent = '0.';
-    calcState.isNewInput = false;
-  } else if (!display.textContent.includes('.')) {
-    display.textContent += buttonEl.textContent;
+  clear() {
+    this.updateValue('0');
   }
 
-  calcState.lastButton = 'point';
-};
-
-const handleEqualsButton = () => {
-  if (calcState.lastButton === 'operator' || calcState.firstOperand === null) return;
-  if (calcState.secondOperand === null || !calcState.isNewInput) {
-    calcState.secondOperand = display.textContent;
+  appendDigit(digit) {
+    const newValue = this.value === '0' ? digit : this.value + digit;
+    this.updateValue(newValue);
   }
 
-  const result = calculate(calcState.firstOperand, calcState.secondOperand, calcState.operator);
-  display.textContent = result;
-  calcState.firstOperand = result;
-  calcState.lastResult = result;
-  calcState.isNewInput = true;
-  calcState.lastButton = 'equals';
-};
-
-const clear = () => {
-  calcState.firstOperand = null;
-  calcState.secondOperand = null;
-  calcState.operator = null;
-  calcState.lastResult = null;
-  display.textContent = '0';
-  calcState.lastButton = 'clear';
-};
-
-const handleSwitchSign = () => {
-  const result = display.textContent * -1;
-  display.textContent = result;
-  calcState.firstOperand = result;
-  calcState.isNewInput = true;
-  calcState.lastButton = 'switchSign';
-};
-
-const handlePercent = () => {
-  const result = roundResult(display.textContent / 100);
-  display.textContent = result;
-  calcState.firstOperand = result;
-  calcState.lastResult = result;
-  calcState.isNewInput = true;
-  calcState.lastButton = 'percent';
-};
-
-const adjustFontSize = () => {
-  const containerWidth = document.querySelector('.calculator__display-container').offsetWidth;
-  const displayStyle = getComputedStyle(display);
-  const displayPadding = parseFloat(displayStyle.paddingLeft) + parseFloat(displayStyle.paddingRight);
-  const textWidth = display.scrollWidth + displayPadding;
-  const ratio = containerWidth / textWidth;
-  const initialFontSize = 40;
-  const currentFontSize = parseFloat(window.getComputedStyle(display).fontSize);
-
-  if (textWidth > containerWidth) {
-    const newFontSize = Math.floor(currentFontSize * ratio);
-    display.style.fontSize = `${newFontSize}px`;
-  } else if (currentFontSize < initialFontSize) {
-    const newFontSize = Math.min(initialFontSize, Math.floor(currentFontSize * ratio));
-    display.style.fontSize = `${newFontSize}px`;
+  setError(message) {
+    this.element.textContent = message;
+    this.element.style.color = 'red';
   }
-};
 
-/**
- * 현재 계산기의 상태를 콘솔에 로그로 출력한다.
- */
-const logCalculatorState = () => {
-  console.log(
-    `firstOperand: ${calcState.firstOperand}\nsecondOperand: ${calcState.secondOperand}\noperator: ${calcState.operator}`
-  );
-};
+  resetError() {
+    this.element.style.color = '';
+  }
+}
 
-/**
- * 계산기 버튼 클릭 이벤트를 처리하는 함수
- * 클릭된 버튼의 종류에 따라 적절한 동작을 수행한다.
- * 모든 버튼 조작 후에는 디스플레이의 폰트 크기를 조정한다.
- * @param {Event} event - 버튼 클릭 이벤트 객체
- */
-const handleButtonClick = (event) => {
-  const buttonEl = event.target;
-  const buttonText = buttonEl.textContent;
+class CalculatorButton {
+  constructor(value, type, onClick) {
+    this.value = value;
+    this.type = type;
+    this.onClick = onClick;
+    this.init();
+  }
 
-  const buttonActions = {
-    C: clear,
-    number: () => handleNumber(buttonEl),
-    operator: () => {
-      handleOperator(buttonEl);
-      logCalculatorState();
-    },
-    '.': () => handlePoint(buttonEl),
-    '±': handleSwitchSign,
-    '%': handlePercent,
-    '=': () => {
-      handleEqualsButton();
-      logCalculatorState();
-    },
+  init() {
+    this.element = document.createElement('button');
+    this.element.className = `calculator__button calculator__button--${this.type}`;
+    this.element.textContent = this.value;
+    this.element.addEventListener('click', () => this.onClick(this.value));
+  }
+
+  render(container) {
+    container.appendChild(this.element);
+  }
+}
+
+class Calculator {
+  constructor(displayElement) {
+    this.display = new CalculatorDisplay(displayElement);
+    this.currentValue = '0';
+    this.previousValue = null;
+    this.operator = null;
+    this.waitingForSecondOperand = false;
+  }
+
+  inputDigit(digit) {
+    if (this.waitingForSecondOperand) {
+      this.currentValue = digit;
+      this.waitingForSecondOperand = false;
+    } else {
+      this.currentValue = this.currentValue === '0' ? digit : this.currentValue + digit;
+    }
+    this.updateDisplay();
+  }
+
+  inputDecimal() {
+    if (this.waitingForSecondOperand) {
+      this.currentValue = '0.';
+      this.waitingForSecondOperand = false;
+    } else if (!this.currentValue.includes('.')) {
+      this.currentValue += '.';
+    }
+    this.updateDisplay();
+  }
+
+  handleOperator(nextOperator) {
+    const inputValue = parseFloat(this.currentValue);
+
+    if (this.operator && this.waitingForSecondOperand) {
+      this.operator = nextOperator;
+      return;
+    }
+
+    if (this.previousValue === null && !isNaN(inputValue)) {
+      this.previousValue = inputValue;
+    } else if (this.operator) {
+      const result = this.calculate(this.previousValue, inputValue, this.operator);
+      this.currentValue = `${parseFloat(result.toFixed(10))}`;
+      this.previousValue = result;
+    }
+
+    this.waitingForSecondOperand = true;
+    this.operator = nextOperator;
+    this.updateDisplay();
+  }
+
+  calculate(firstOperand, secondOperand, operator) {
+    switch (operator) {
+      case '+':
+        return firstOperand + secondOperand;
+      case '-':
+        return firstOperand - secondOperand;
+      case '*':
+        return firstOperand * secondOperand;
+      case '/':
+        if (secondOperand === 0) {
+          this.display.setError('Error');
+          return 0;
+        }
+        return firstOperand / secondOperand;
+      default:
+        return secondOperand;
+    }
+  }
+
+  clear() {
+    this.currentValue = '0';
+    this.previousValue = null;
+    this.operator = null;
+    this.waitingForSecondOperand = false;
+    this.updateDisplay();
+    this.display.resetError();
+  }
+
+  updateDisplay() {
+    this.display.updateValue(this.currentValue);
+  }
+
+  handleEqual() {
+    if (this.operator && !this.waitingForSecondOperand) {
+      const inputValue = parseFloat(this.currentValue);
+      const result = this.calculate(this.previousValue, inputValue, this.operator);
+      this.currentValue = `${parseFloat(result.toFixed(10))}`;
+      this.previousValue = null;
+      this.operator = null;
+      this.waitingForSecondOperand = true;
+      this.updateDisplay();
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const displayElement = document.querySelector('.calculator__display');
+  const buttonContainer = document.querySelector('.calculator__buttons');
+  const calculator = new Calculator(displayElement);
+
+  const handleButtonClick = (value) => {
+    switch (value) {
+      case '+':
+      case '-':
+      case '*':
+      case '/':
+        calculator.handleOperator(value);
+        break;
+      case '=':
+        calculator.handleEqual();
+        break;
+      case 'C':
+        calculator.clear();
+        break;
+      case '.':
+        calculator.inputDecimal();
+        break;
+      default:
+        if (!isNaN(parseFloat(value)) && isFinite(value)) {
+          calculator.inputDigit(value);
+        }
+        break;
+    }
   };
 
-  const buttonType = buttonEl.classList.contains('calculator__button--number')
-    ? 'number'
-    : buttonEl.classList.contains('calculator__button--operator')
-    ? 'operator'
-    : buttonText;
+  const buttonData = [
+    { value: 'C', type: 'function' },
+    { value: '±', type: 'function' },
+    { value: '%', type: 'function' },
+    { value: '/', type: 'operator' },
+    { value: '7', type: 'number' },
+    { value: '8', type: 'number' },
+    { value: '9', type: 'number' },
+    { value: '*', type: 'operator' },
+    { value: '4', type: 'number' },
+    { value: '5', type: 'number' },
+    { value: '6', type: 'number' },
+    { value: '-', type: 'operator' },
+    { value: '1', type: 'number' },
+    { value: '2', type: 'number' },
+    { value: '3', type: 'number' },
+    { value: '+', type: 'operator' },
+    { value: '0', type: 'number-zero' },
+    { value: '.', type: 'point' },
+    { value: '=', type: 'operator' },
+  ];
 
-  const action = buttonActions[buttonType];
-  if (action) {
-    action();
-  }
-
-  adjustFontSize();
-};
-
-const handleCopy = async () => {
-  try {
-    await navigator.clipboard.writeText(display.textContent);
-
-    pop.style.bottom = '40px';
-    pop.style.opacity = 1;
-
-    setTimeout(() => {
-      pop.style.bottom = '-1000px';
-      pop.style.opacity = 0;
-    }, 2000);
-  } catch (err) {
-    console.error('클립보드 복사 실패:', err);
-  }
-};
-
-// 이벤트 리스너 등록
-buttons.forEach((button) => {
-  button.addEventListener('click', handleButtonClick);
+  buttonData.forEach((button) => {
+    const calculatorButton = new CalculatorButton(button.value, button.type, handleButtonClick);
+    calculatorButton.render(buttonContainer);
+  });
 });
-display.addEventListener('click', handleCopy);
